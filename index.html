@@ -1028,11 +1028,11 @@ const STAGE_NAMES=['تحضير المكوّنات','الطبخ','تحدّي ال
 /* ================= الملف الشخصي ================= */
 const LEVELS=[[0,'مبتدئة','🌱'],[800,'متدرّبة','📘'],[2500,'فارسة','🛡️'],[5000,'بطلة','🏆'],[9000,'أسطورة','🌟']];
 function levelOf(xp){let k=0;LEVELS.forEach((x,j)=>{if(xp>=x[0])k=j});const l=LEVELS[k],nx=LEVELS[k+1];return{k,name:l[1],icon:l[2],from:l[0],next:nx?nx[0]:null}}
-const DEF_AV={age:11,skin:1,hair:'hijab',hc:'h0',outfit:'pinafore',oc:'c2',acc:'none',hand:'none'};
+const DEF_AV={age:11,skin:1,hair:'hijab',hc:'h0',outfit:'apron',oc:'c8',acc:'chefhat',hand:'spoon'};
 let player=LS.get('lkit-player','');
 function profAll(){return LS.get('lkit-prof',{})}
 function prof(n){const p=(profAll()[n||player])||{};
- return {xp:p.xp||0,coins:p.coins||0,coinsTotal:p.coinsTotal||0,badges:p.badges||[],items:p.items||[],av:Object.assign({},DEF_AV,p.av||{}),
+ return {xp:p.xp||0,coins:p.coins||0,coinsTotal:p.coinsTotal||0,badges:p.badges||[],items:p.items||[],av:fixAv(Object.assign({},DEF_AV,p.av||{})),
   prog:p.prog||{},stomps:p.stomps||0,treasures:p.treasures||0,cleanStages:p.cleanStages||0,made:!!p.made,diff:p.diff==null?1:p.diff,weak:p.weak||{},gold:p.gold||0,maxCombo:p.maxCombo||0,hardWins:p.hardWins||0,reviews:p.reviews||0,deco:p.deco||[]}}
 function profSave(p,n){const a=profAll();a[n||player]=p;LS.set('lkit-prof',a)}
 let unlockAll=LS.get('lkit-unlock-all',false);
@@ -1048,31 +1048,56 @@ function worldUnlocked(i){
 /* fr: مجاني • lv:k يُفتح بالمستوى • coin:n يُشترى بالعملات • tr: كنز */
 const SKINS=['#fbe3cf','#f6d7b8','#eac096','#d6a070','#b97b50','#8a5634','#5e3a22'];
 const SKIN_NAMES=['فاتح جدًّا','فاتح','حنطي فاتح','حنطي','أسمر','أسمر داكن','داكن'];
+/* ================= خزانة مطبخ لبيبة: أزياء الطبخ والحلويات ================= */
 const ITEMS={
  hair:[{id:'hijab',n:'حجاب أبيض',fr:1},{id:'hijabK',n:'حجاب أسود',fr:1},{id:'hijabP',n:'حجاب وردي',fr:1},{id:'hijabB',n:'حجاب أزرق',fr:1},{id:'long',n:'شعر طويل',fr:1},{id:'pony',n:'ذيل حصان',fr:1},{id:'braids',n:'ضفيرتان',fr:1},{id:'bob',n:'قصير',fr:1},{id:'bun',n:'كعكة',coin:100},{id:'curls',n:'مجعّد',coin:150},{id:'hijabF',n:'حجاب مزهّر',tr:1}],
- hc:[{id:'h0',n:'أسود',c:'#1b1b1b',fr:1},{id:'h1',n:'بنّي داكن',c:'#3b2416',fr:1},{id:'h2',n:'بنّي',c:'#6b4423',fr:1},{id:'h3',n:'كستنائي',c:'#9a4a22',fr:1},{id:'h4',n:'ذهبي',c:'#e0b030',lv:2},{id:'h5',n:'فضّي',c:'#c9d1d9',lv:3},{id:'h6',n:'أزرق',c:'#3b82f6',tr:1},{id:'h7',n:'بنفسجي',c:'#9b5de5',tr:1},{id:'h8',n:'أخضر',c:'#2ecc71',tr:1},{id:'h9',n:'ناري',c:'#ff5722',coin:250}],
- outfit:[{id:'pinafore',n:'الزيّ المدرسي',e:'🎒',fr:1},{id:'dress',n:'فستان',e:'👗',fr:1},{id:'jalabiya',n:'جلابية',e:'🧕',fr:1},{id:'abaya',n:'عباءة',e:'🖤',fr:1},{id:'jersey',n:'قميص رياضي',e:'🎽',fr:1},{id:'hoodie',n:'سترة',e:'🧥',fr:1},{id:'doctor',n:'معطف الطبيبة',e:'🥼',lv:1},{id:'chef',n:'زيّ الطاهية',e:'🧑‍🍳',coin:200},{id:'pilot',n:'زيّ الطيّارة',e:'🧑‍✈️',coin:250},{id:'explorer',n:'زيّ المستكشفة',e:'🧭',coin:350},{id:'armor',n:'درع الفارسة',e:'🛡️',lv:2},{id:'gown',n:'فستان الأميرة',e:'👸',lv:3},{id:'hero',n:'بدلة البطلة الخارقة',e:'🦸‍♀️',tr:1},{id:'astro',n:'بدلة الفضاء',e:'🧑‍🚀',tr:1}],
- oc:[{id:'c0',n:'فيروزي',c:'#0f9d9a',fr:1},{id:'c1',n:'برتقالي',c:'#ff8a3d',fr:1},{id:'c2',n:'أزرق',c:'#1e88e5',fr:1},{id:'c3',n:'أحمر',c:'#e53935',fr:1},{id:'c4',n:'أخضر',c:'#2e9e4f',fr:1},{id:'c5',n:'أسود',c:'#263238',coin:100},{id:'c8',n:'وردي',c:'#ff6f91',fr:1},{id:'c9',n:'بنفسجي',c:'#6c5ce7',fr:1},{id:'c10',n:'أبيض',c:'#eceff1',coin:80},{id:'c6',n:'ذهبي',c:'#f2c230',tr:1},{id:'c11',n:'فضّي',c:'#b0bec5',lv:3},{id:'c7',n:'قوس قزح',c:'rainbow',tr:1}],
- hand:[{id:'none',n:'بدون',e:'➖',fr:1},{id:'book',n:'كتاب',e:'📘',fr:1},{id:'flag',n:'علم البحرين',e:'🇧🇭',fr:1},{id:'pencil',n:'قلم',e:'✏️',fr:1},{id:'shield',n:'ترس',e:'🛡️',coin:250},{id:'sword',n:'سيف الفارسة',e:'🗡️',lv:2},{id:'trophy',n:'كأس',e:'🏆',lv:3},{id:'wand',n:'عصا سحرية',e:'🪄',tr:1},{id:'falcon',n:'صقر',e:'🦅',tr:1}],
- acc:[{id:'none',n:'بدون',e:'➖',fr:1},{id:'bow',n:'فيونكة',e:'🎀',fr:1},{id:'flower',n:'وردة',e:'🌸',fr:1},{id:'glasses',n:'نظّارة',e:'👓',fr:1},{id:'headband',n:'طوق شعر',e:'💜',fr:1},{id:'earrings',n:'أقراط',e:'✨',fr:1},{id:'headphones',n:'سمّاعات',e:'🎧',fr:1},{id:'scarf',n:'وشاح',e:'🧣',coin:100},{id:'partyhat',n:'قبّعة الحفل',e:'🥳',coin:120},{id:'chefhat',n:'قبّعة الطاهية',e:'👩‍🍳',coin:150},{id:'goggles',n:'نظّارة الطيران',e:'🥽',coin:180},{id:'sunglasses',n:'نظّارة شمسية',e:'🕶️',coin:200},{id:'medal',n:'وسام',e:'🏅',lv:1},{id:'gradcap',n:'قبّعة التخرّج',e:'🎓',lv:2},{id:'cape',n:'عباءة الأبطال',e:'🦸‍♀️',lv:3},{id:'tiara',n:'تاج الأميرة',e:'👸',tr:1},{id:'crown',n:'تاج',e:'👑',tr:1},{id:'wings',n:'أجنحة',e:'🪽',tr:1}]
+ hc:[{id:'h0',n:'أسود',c:'#1b1b1b',fr:1},{id:'h1',n:'بنّي داكن',c:'#3b2416',fr:1},{id:'h2',n:'بنّي',c:'#6b4423',fr:1},{id:'h3',n:'كستنائي',c:'#9a4a22',fr:1},{id:'h4',n:'ذهبي',c:'#e0b030',lv:2},{id:'h5',n:'فضّي',c:'#c9d1d9',lv:3},{id:'h7',n:'بنفسجي',c:'#9b5de5',tr:1},{id:'h9',n:'ناري',c:'#ff5722',coin:250}],
+ outfit:[{id:'apron',n:'مريلة الفراولة',e:'🍓',fr:1},{id:'chef',n:'زيّ الطاهية',e:'👩‍🍳',fr:1},{id:'pinafore',n:'الزيّ المدرسي',e:'🎒',fr:1},{id:'jalabiya',n:'جلابية',e:'🧕',fr:1},{id:'dress',n:'فستان',e:'👗',fr:1},{id:'abaya',n:'عباءة',e:'🖤',fr:1},{id:'baker',n:'زيّ الخبّازة',e:'🥖',lv:1},{id:'pastry',n:'زيّ صانعة الحلويات',e:'🍬',coin:150},{id:'host',n:'زيّ مقدّمة برنامج الطبخ',e:'🎙️',coin:250},{id:'gown',n:'فستان حفلة الحلويات',e:'👸',lv:3},{id:'goldchef',n:'زيّ الشيف الذهبي',e:'🏅',tr:1}],
+ oc:[{id:'c8',n:'وردي',c:'#ff6f91',fr:1},{id:'c3',n:'أحمر',c:'#e53935',fr:1},{id:'c0',n:'فيروزي',c:'#0f9d9a',fr:1},{id:'c1',n:'برتقالي',c:'#ff8a3d',fr:1},{id:'c2',n:'أزرق',c:'#1e88e5',fr:1},{id:'c4',n:'أخضر',c:'#2e9e4f',fr:1},{id:'c9',n:'بنفسجي',c:'#6c5ce7',fr:1},{id:'c10',n:'أبيض',c:'#eceff1',coin:80},{id:'c5',n:'أسود',c:'#263238',coin:100},{id:'c11',n:'فضّي',c:'#b0bec5',lv:3},{id:'c6',n:'ذهبي',c:'#f2c230',tr:1},{id:'c7',n:'قوس قزح',c:'rainbow',tr:1}],
+ hand:[{id:'none',n:'بدون',e:'➖',fr:1},{id:'spoon',n:'ملعقة خشبية',e:'🥄',fr:1},{id:'whisk',n:'مضرب البيض',e:'🥢',fr:1},{id:'cookie',n:'بسكويتة',e:'🍪',fr:1,emo:1},{id:'bowl',n:'وعاء الخلط',e:'🥣',coin:120,emo:1},{id:'pan',n:'مقلاة',e:'🍳',coin:150,emo:1},{id:'rolling',n:'شوبك العجين',e:'🪵',coin:180},{id:'cupcake',n:'كب كيك',e:'🧁',lv:1,emo:1},{id:'trophy',n:'كأس أفضل طاهية',e:'🏆',lv:2},{id:'cake',n:'كعكة الاحتفال',e:'🎂',lv:3,emo:1},{id:'goldspoon',n:'الملعقة الذهبية',e:'✨',tr:1}],
+ acc:[{id:'none',n:'بدون',e:'➖',fr:1},{id:'chefhat',n:'قبّعة الطاهية',e:'👩‍🍳',fr:1},{id:'kerchief',n:'منديل المطبخ',e:'🧣',fr:1},{id:'bow',n:'فيونكة',e:'🎀',fr:1},{id:'flower',n:'وردة',e:'🌸',fr:1},{id:'glasses',n:'نظّارة',e:'👓',fr:1},{id:'earrings',n:'أقراط',e:'✨',fr:1},{id:'strawclip',n:'مشبك الفراولة',e:'🍓',coin:80},{id:'cupclip',n:'مشبك الكب كيك',e:'🧁',coin:100},{id:'medal',n:'وسام الطهي',e:'🏅',lv:1},{id:'toque',n:'قبّعة الشيف الكبيرة',e:'🎩',lv:2},{id:'tiara',n:'تاج الحلويات',e:'👸',tr:1},{id:'crown',n:'تاج',e:'👑',tr:1}]
 };
-const KIND_NAMES={hair:'تسريحة',hc:'لون الشعر',outfit:'ملابس',oc:'لون الملابس',acc:'إكسسوار',hand:'قطعة في اليد'};
-/* أطقم جاهزة: تُلبس دفعة واحدة إذا امتلك اللاعب كل قطعها */
+const KIND_NAMES={hair:'تسريحة',hc:'لون الشعر',outfit:'ملابس',oc:'لون الملابس',acc:'إكسسوار',hand:'أداة في اليد'};
 const SETS=[
- {n:'الطالبة المجتهدة',e:'🎒',av:{hair:'hijab',outfit:'pinafore',oc:'c2',acc:'glasses',hand:'book'}},
- {n:'بنت البحرين',e:'🇧🇭',av:{hair:'hijabK',outfit:'jalabiya',oc:'c3',acc:'none',hand:'flag'}},
- {n:'نجمة الملعب',e:'⚽',av:{hair:'pony',outfit:'jersey',oc:'c8',acc:'headband',hand:'trophy'}},
- {n:'الطبيبة الصغيرة',e:'🩺',av:{hair:'hijab',outfit:'doctor',oc:'c0',acc:'glasses',hand:'pencil'}},
- {n:'الطاهية الماهرة',e:'🍳',av:{hair:'bun',outfit:'chef',oc:'c10',acc:'chefhat',hand:'none'}},
- {n:'الطيّارة',e:'✈️',av:{hair:'hijabB',outfit:'pilot',oc:'c2',acc:'goggles',hand:'none'}},
- {n:'المستكشفة',e:'🧭',av:{hair:'braids',outfit:'explorer',oc:'c4',acc:'scarf',hand:'book'}},
- {n:'الفارسة الذهبية',e:'⚔️',av:{hair:'hijab',outfit:'armor',oc:'c6',acc:'none',hand:'sword'}},
- {n:'الأميرة',e:'👸',av:{hair:'long',outfit:'gown',oc:'c8',acc:'tiara',hand:'wand'}},
- {n:'رائدة الفضاء',e:'🚀',av:{hair:'hijabB',outfit:'astro',oc:'c2',acc:'none',hand:'none'}},
- {n:'البطلة الخارقة',e:'🦸‍♀️',av:{hair:'pony',outfit:'hero',oc:'c3',acc:'cape',hand:'none'}},
- {n:'صاحبة الحفل',e:'🥳',av:{hair:'curls',outfit:'dress',oc:'c9',acc:'partyhat',hand:'none'}},
- {n:'زهرة الربيع',e:'🌸',av:{hair:'hijabF',outfit:'dress',oc:'c8',acc:'flower',hand:'none'}}
+ {n:'الطاهية الصغيرة',e:'👩‍🍳',av:{hair:'hijab',outfit:'chef',oc:'c3',acc:'chefhat',hand:'spoon'}},
+ {n:'مريلة الفراولة',e:'🍓',av:{hair:'hijabP',outfit:'apron',oc:'c8',acc:'strawclip',hand:'whisk'}},
+ {n:'الخبّازة',e:'🥖',av:{hair:'hijabB',outfit:'baker',oc:'c1',acc:'kerchief',hand:'rolling'}},
+ {n:'صانعة الحلويات',e:'🍬',av:{hair:'bun',outfit:'pastry',oc:'c8',acc:'cupclip',hand:'cupcake'}},
+ {n:'مقدّمة برنامج الطبخ',e:'🎙️',av:{hair:'hijabK',outfit:'host',oc:'c9',acc:'earrings',hand:'pan'}},
+ {n:'بنت البحرين',e:'🇧🇭',av:{hair:'hijabK',outfit:'jalabiya',oc:'c3',acc:'none',hand:'bowl'}},
+ {n:'الطالبة المجتهدة',e:'🎒',av:{hair:'hijab',outfit:'pinafore',oc:'c2',acc:'glasses',hand:'cookie'}},
+ {n:'الشيف الكبيرة',e:'🏆',av:{hair:'hijab',outfit:'chef',oc:'c10',acc:'toque',hand:'trophy'}},
+ {n:'ملكة الحلويات',e:'👸',av:{hair:'long',outfit:'gown',oc:'c8',acc:'tiara',hand:'cake'}},
+ {n:'الشيف الذهبية',e:'✨',av:{hair:'hijabF',outfit:'goldchef',oc:'c6',acc:'crown',hand:'goldspoon'}}
 ];
+function fixAv(a){for(const k of ['hair','hc','outfit','oc','acc','hand'])if(!ITEMS[k].some(i=>i.id===a[k]))a[k]=DEF_AV[k];return a}
+function themeAvatar(x,A,headY,headR,oc0,top,bot,bw){
+ const oc=oc0==='rainbow'?'#ff6f91':oc0,o=A.outfit,veil=(A.hair||'').startsWith('hijab'),R=(X,Y,w,h,r)=>{x.beginPath();if(x.roundRect)x.roundRect(X,Y,w,h,r);else x.rect(X,Y,w,h)};
+ const body=col=>{x.fillStyle=col;R(50-bw,top,bw*2,bot-top+4,14);x.fill()};
+ const apronShape=()=>{x.beginPath();x.moveTo(40,top+6);x.lineTo(60,top+6);x.lineTo(62,top+24);x.lineTo(66,bot+2);x.lineTo(34,bot+2);x.lineTo(38,top+24);x.closePath()};
+ if(o==='apron'){x.fillStyle=oc;x.beginPath();x.moveTo(50-bw+4,top);x.lineTo(50+bw-4,top);x.lineTo(50+bw+8,bot+4);x.lineTo(50-bw-8,bot+4);x.closePath();x.fill();x.fillStyle='#fff';apronShape();x.fill();x.strokeStyle='#fff';x.lineWidth=2.5;x.beginPath();x.moveTo(40,top+6);x.lineTo(36,top-2);x.moveTo(60,top+6);x.lineTo(64,top-2);x.stroke();
+  [[44,top+30],[56,top+38],[46,top+48],[57,top+24]].forEach(([a,b])=>{x.fillStyle='#e53935';x.beginPath();x.moveTo(a-3.5,b-2);x.quadraticCurveTo(a,b+6,a+3.5,b-2);x.closePath();x.fill();x.fillStyle='#2e9e4f';x.fillRect(a-2.5,b-4,5,2)});x.fillStyle='#ffcdd2';x.fillRect(36,top+18,28,3)}
+ if(o==='baker'){body('#f5e6c8');x.fillStyle='#8d5a33';apronShape();x.fill();x.fillStyle='rgba(255,255,255,.75)';[[40,top+30],[58,top+44],[48,top+52],[62,top+22],[36,top+50]].forEach(([a,b])=>{x.beginPath();x.arc(a,b,1.8,0,7);x.fill()});x.fillStyle='#f5e6c8';x.fillRect(42,top+34,16,10);x.strokeStyle='#5d3b1f';x.lineWidth=1.2;x.strokeRect(42,top+34,16,10)}
+ if(o==='pastry'){body('#fff');x.save();R(50-bw,top,bw*2,bot-top+4,14);x.clip();x.fillStyle=oc;for(let k=-2;k<10;k++)x.fillRect(50-bw+k*8,top,4,bot-top+6);x.restore();x.fillStyle='#fff';x.beginPath();x.moveTo(42,top);x.lineTo(50,top+10);x.lineTo(58,top);x.fill();x.fillStyle=oc;x.beginPath();x.moveTo(50,top+8);x.lineTo(42,top+3);x.lineTo(42,top+13);x.closePath();x.moveTo(50,top+8);x.lineTo(58,top+3);x.lineTo(58,top+13);x.closePath();x.fill()}
+ if(o==='host'){body('#fafafa');x.fillStyle=oc;x.beginPath();x.moveTo(50-bw,top+4);x.lineTo(46,top);x.lineTo(46,bot+4);x.lineTo(50-bw,bot+4);x.fill();x.beginPath();x.moveTo(50+bw,top+4);x.lineTo(54,top);x.lineTo(54,bot+4);x.lineTo(50+bw,bot+4);x.fill();x.fillStyle='rgba(0,0,0,.18)';x.beginPath();x.moveTo(46,top);x.lineTo(40,top+18);x.lineTo(46,top+22);x.fill();x.beginPath();x.moveTo(54,top);x.lineTo(60,top+18);x.lineTo(54,top+22);x.fill();x.fillStyle='#37474f';R(30,top+20,6,10,3);x.fill();x.fillStyle='#f2c230';x.beginPath();x.arc(33,top+19,3,0,7);x.fill()}
+ if(o==='goldchef'){const g=x.createLinearGradient(50-bw,0,50+bw,0);g.addColorStop(0,'#c99a12');g.addColorStop(.45,'#ffe27a');g.addColorStop(1,'#b8860b');x.fillStyle=g;R(50-bw,top,bw*2,bot-top+4,14);x.fill();x.fillStyle='#fff8e1';[[44,top+14],[56,top+14],[44,top+26],[56,top+26],[44,top+38],[56,top+38]].forEach(([a,b])=>{x.beginPath();x.arc(a,b,2.6,0,7);x.fill()});x.fillStyle='#e53935';x.fillRect(40,top,20,5)}
+ if(o==='chef'){x.fillStyle=oc==='#eceff1'?'#90a4ae':oc;x.fillRect(50-bw+4,bot-4,bw*2-8,4)}
+ /* إكسسوارات الرأس (تظهر فوق الحجاب أيضًا) */
+ const ac=A.acc,hy=veil?headY+2:headY+4;
+ if((ac==='chefhat'&&veil)){x.fillStyle='#fff';x.strokeStyle='rgba(0,0,0,.14)';x.lineWidth=1.4;R(32,hy-26,36,11,3);x.fill();x.stroke();[[38,-31],[50,-35],[62,-31]].forEach(([a,b])=>{x.beginPath();x.arc(a,hy+b,9,0,7);x.fill();x.stroke()});x.fillRect(33,hy-30,34,8)}
+ if(ac==='toque'){x.fillStyle='#fff';x.strokeStyle='rgba(0,0,0,.14)';x.lineWidth=1.4;R(32,hy-28,36,12,3);x.fill();x.stroke();x.beginPath();x.moveTo(33,hy-26);x.lineTo(31,hy-46);x.quadraticCurveTo(50,hy-56,69,hy-46);x.lineTo(67,hy-26);x.closePath();x.fill();x.stroke();x.strokeStyle='rgba(0,0,0,.08)';for(let k=-1;k<=1;k++){x.beginPath();x.moveTo(50+k*9,hy-28);x.lineTo(50+k*11,hy-48);x.stroke()}}
+ if(ac==='kerchief'){x.fillStyle=oc==='#e53935'?'#1e88e5':'#e53935';x.beginPath();x.moveTo(26,hy-6);x.quadraticCurveTo(50,hy-34,74,hy-6);x.quadraticCurveTo(50,hy-18,26,hy-6);x.fill();x.fillStyle='rgba(255,255,255,.85)';for(let k=0;k<6;k++){x.beginPath();x.arc(32+k*7.5,hy-14-Math.sin(k/5*Math.PI)*8,1.5,0,7);x.fill()}x.fillStyle=oc==='#e53935'?'#1e88e5':'#e53935';x.beginPath();x.moveTo(72,hy-8);x.lineTo(82,hy-2);x.lineTo(76,hy+4);x.closePath();x.fill()}
+ const clip=e=>{x.save();x.font='15px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#000';x.fillText(e,veil?68:70,headY-headR+6);x.restore()};
+ if(ac==='strawclip')clip('🍓');if(ac==='cupclip')clip('🧁');
+ /* أدوات اليد */
+ const hd=A.hand;
+ if(hd==='spoon'){x.save();x.translate(86,94);x.rotate(.35);x.fillStyle='#b9824a';x.strokeStyle='#7a4a22';x.lineWidth=1;x.fillRect(-2,-8,4,26);x.strokeRect(-2,-8,4,26);x.beginPath();x.ellipse(0,-14,6,9,0,0,7);x.fill();x.stroke();x.restore()}
+ if(hd==='whisk'){x.save();x.translate(86,94);x.rotate(.3);x.fillStyle='#5d4037';x.fillRect(-2.5,4,5,16);x.strokeStyle='#b0bec5';x.lineWidth=1.6;for(let k=-2;k<=2;k++){x.beginPath();x.ellipse(k*1.4,-8,4+Math.abs(k)*1.6,12,0,0,7);x.stroke()}x.restore()}
+ if(hd==='rolling'){x.save();x.translate(84,96);x.rotate(-.5);x.fillStyle='#d7a36a';R(-14,-5,28,10,5);x.fill();x.fillStyle='#8d5a33';R(-22,-2.5,9,5,2);x.fill();R(13,-2.5,9,5,2);x.fill();x.restore()}
+ if(hd==='goldspoon'){x.save();x.translate(86,92);x.rotate(.35);const g=x.createLinearGradient(-6,-20,6,20);g.addColorStop(0,'#fff3b0');g.addColorStop(1,'#d4a017');x.fillStyle=g;x.fillRect(-2,-6,4,26);x.beginPath();x.ellipse(0,-13,6.5,9.5,0,0,7);x.fill();x.restore();x.fillStyle='#fff';[[96,74],[78,70],[98,90]].forEach(([a,b])=>{x.fillRect(a-3,b-.6,6,1.2);x.fillRect(a-.6,b-3,1.2,6)})}
+ const hi=ITEMS.hand.find(i=>i.id===hd);if(hi&&hi.emo){x.save();x.translate(87,96);x.font='24px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#000';x.globalAlpha=1;x.fillText(hi.e,0,0);x.restore()}
+}
+
 function itemOwned(kind,it,p){p=p||prof();if(it.fr)return true;if(it.lv!=null)return levelOf(p.xp).k>=it.lv;return p.items.includes(kind+':'+it.id)}
 function treasurePool(p){const out=[];Object.keys(ITEMS).forEach(k=>ITEMS[k].forEach(it=>{if(it.tr&&!p.items.includes(k+':'+it.id))out.push([k,it])}));return out}
 const ocColor=id=>(ITEMS.oc.find(x=>x.id===id)||ITEMS.oc[0]).c;
@@ -1155,6 +1180,7 @@ function drawAvatar(x,A,W,opt){
  if(A.acc==='gradcap'&&!ghutra){x.fillStyle='#1d1d24';x.beginPath();x.moveTo(24,headY-22);x.lineTo(50,headY-32);x.lineTo(76,headY-22);x.lineTo(50,headY-12);x.closePath();x.fill();x.fillRect(38,headY-20,24,8);x.strokeStyle='#f2c230';x.lineWidth=2;x.beginPath();x.moveTo(50,headY-22);x.lineTo(70,headY-18);x.lineTo(70,headY-4);x.stroke();x.fillStyle='#f2c230';x.fillRect(68,headY-6,4,6)}
  if(A.acc==='helmet'&&!ghutra){const g=x.createLinearGradient(0,headY-30,0,headY+24);g.addColorStop(0,'#eef2f5');g.addColorStop(1,'#8a96a3');x.fillStyle=g;x.beginPath();x.arc(50,headY,headR+4,Math.PI,0);x.lineTo(74,headY+20);x.lineTo(26,headY+20);x.closePath();x.fill();x.fillStyle='#1d2b3a';rr(x,32,headY-2,36,6,3);x.fill();x.fillStyle='#e53935';x.beginPath();x.moveTo(50,headY-26);x.quadraticCurveTo(64,headY-44,72,headY-30);x.quadraticCurveTo(60,headY-34,50,headY-22);x.fill()}
  girlAcc(x,A,headY,headR,veil);
+ themeAvatar(x,A,headY,headR,oc,top,bot,bw);
  /* ما يحمله في يده */
  const hd=A.hand||'none';
  if(hd==='book'){x.fillStyle='#1e88e5';rr(x,76,88,18,24,3);x.fill();x.fillStyle='#fff';x.fillRect(79,92,12,3);x.fillRect(79,98,9,2)}
@@ -1880,7 +1906,7 @@ function startStage(wi,s){
   /* لبيبة خلف سطح العمل */
   {const hx=HX(),hh=120*U,hw=hh*60/72,bob=Math.sin(t/420)*1.5-(hero.toss>0?Math.sin(hero.toss*Math.PI)*10*U:0);
    x.save();x.translate(hx,GY+12*U+bob);if(hero.twirl&&!RM())x.scale(Math.cos(hero.twirl/8),1);x.drawImage(sprite((t%3600)<130),-hw/2,-hh,hw,hh);
-    /* قبّعة الطاهية */const ht=-hh*.95;x.fillStyle='#ffffff';x.strokeStyle='rgba(120,100,90,.35)';x.lineWidth=1.5;rrx(x,-hw*.24,ht,hw*.48,hh*.06,3);x.fill();x.stroke();[[-.15,-.04,.12],[0,-.08,.14],[.15,-.04,.12]].forEach(([a,b,rr2])=>{x.beginPath();x.arc(a*hw,ht+b*hh,rr2*hw,0,7);x.fill();x.stroke()});x.fillRect(-hw*.23,ht-hh*.04,hw*.46,hh*.05);
+    /* قبّعة الطاهية */const ht=-hh*.95;if(!['chefhat','toque'].includes(A.acc)){x.fillStyle='#ffffff';x.strokeStyle='rgba(120,100,90,.35)';x.lineWidth=1.5;rrx(x,-hw*.24,ht,hw*.48,hh*.06,3);x.fill();x.stroke();[[-.15,-.04,.12],[0,-.08,.14],[.15,-.04,.12]].forEach(([a,b,rr2])=>{x.beginPath();x.arc(a*hw,ht+b*hh,rr2*hw,0,7);x.fill();x.stroke()});x.fillRect(-hw*.23,ht-hh*.04,hw*.46,hh*.05);}
     /* الملعقة الخشبية تتحرّك */const sa=hero.toss>0?-1.2+hero.toss*.3:Math.sin(t/260)*.35-.2;x.save();x.translate(hw*.36,-hh*.28);x.rotate(sa);x.fillStyle='#b9824a';x.strokeStyle='#7a4a22';x.lineWidth=1.2;rrx(x,-2*U,-hh*.42,4*U,hh*.42,2*U);x.fill();x.stroke();x.beginPath();x.ellipse(0,-hh*.44,6*U,9*U,0,0,7);x.fill();x.stroke();x.restore();
     x.restore();
    x.font=`900 ${12*U}px Tajawal,sans-serif`;x.textAlign='center';x.fillStyle='#fff';x.strokeStyle='rgba(120,30,90,.7)';x.lineWidth=3;x.strokeText(HERO_NAME,hx,GY-12*U-hh+bob);x.fillText(HERO_NAME,hx,GY-12*U-hh+bob)}
