@@ -1511,8 +1511,17 @@ function badgeCase(){
 /* ================= حفظ النتائج ================= */
 let DB=null;const LOCAL_KEY='lkit-results';
 function localAll(){return LS.get(LOCAL_KEY,[])}
-async function saveResult(r){if(DB){try{await DB.collection('results').add(r);return 'shared'}catch(e){}}const a=localAll();a.push(r);LS.set(LOCAL_KEY,a);return 'local'}
-async function loadResults(){if(DB){try{const s=await DB.collection('results').orderBy('at','desc').limit(800).get();return s.docs.map(d=>({id:d.id,...d.data()}))}catch(e){}}return localAll().slice().reverse()}
+const GAME_ID='labiba-kitchen';
+/* ================= ربط النتائج بجدول Google الخاص بالمعلم ================= */
+var SHEET_URL='';/* ضع هنا رابط تطبيق الويب من Google Apps Script */
+function sheetOn(){return /^https:\/\/script\.google\.com\//.test(SHEET_URL)}
+async function saveResult(r){const a=localAll();a.push(r);LS.set(LOCAL_KEY,a);
+ if(sheetOn()){try{await fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({game:GAME_ID},r))});return 'shared'}catch(e){}}
+ if(DB){try{await DB.collection('results').add(r);return 'shared'}catch(e){}}return 'local'}
+async function loadResults(){
+ if(sheetOn()){try{const res=await fetch(SHEET_URL+'?game='+encodeURIComponent(GAME_ID)+'&t='+Date.now());const a=await res.json();if(Array.isArray(a))return a.filter(r=>r&&r.name).sort((x,y)=>(y.at||0)-(x.at||0))}catch(e){}}
+ if(DB){try{const s=await DB.collection('results').orderBy('at','desc').limit(800).get();return s.docs.map(d=>({id:d.id,...d.data()}))}catch(e){}}
+ return localAll().slice().reverse()}
 
 /* ================= صفحة المعلم ================= */
 const TEACHER_PIN='1234';let pinOk=false,rTab='grid',rConfirm=false,rsOpen=false,rsAsk=null,rsDone='';
@@ -1548,7 +1557,7 @@ async function results(){
  }
  const tabs=[['grid','لوحة الصف'],['all','كل المحاولات'],['nahw','🏛️ النحو'],['imla','✍️ الإملاء']];
  app.innerHTML=`<div class="screen"><div class="card rp">
-  <h1>📊 نتائج مطبخ لبيبة</h1><p class="meta">الصف الرابع • ${DB?'نتائج كل الأجهزة':'النتائج المحفوظة على هذا الجهاز'}</p>
+  <h1>📊 نتائج مطبخ لبيبة</h1><p class="meta">الصف الرابع • ${(DB||sheetOn())?'نتائج كل الأجهزة':'النتائج المحفوظة على هذا الجهاز'}</p>
   <div class="kpis"><div class="kpi"><b>${AR(all.length)}</b><span>مرحلة لُعبت</span></div><div class="kpi"><b>${AR(played.size)}</b><span>طالبة لعبن</span></div><div class="kpi"><b>${AR(all.filter(r=>r.win&&r.stage===2).length)}</b><span>عالم أُكمل</span></div><div class="kpi"><b>${AR(all.length?(all.reduce((s,r)=>s+r.correct/(r.total||1),0)/all.length*10).toFixed(1):0)}</b><span>متوسط من ١٠</span></div></div>
   <div class="rtabs" role="tablist">${tabs.map(([k,t])=>`<button class="rtab" role="tab" data-t="${k}" aria-selected="${rTab===k}">${t}</button>`).join('')}</div>
   ${body}
@@ -1611,7 +1620,7 @@ async function podium(back){
    ${rk.map((r,k)=>`<div class="lbr ${r.name===player?'me':''} ${k<3?'t'+(k+1):''}" role="row"><span class="rk">${k<3?M[[1,0,2][k]]:AR(k+1)}</span><span class="nm"><img class="mini-av" alt="" src="${avURL(r.av,26)}"><b>${esc(r.name)}</b></span><span class="sc">${AR(r.score)}</span><span>${AR(r.worlds)}</span><span>${AR(r.stars)}</span><span>${AR(r.gold)}</span></div>`).join('')}
   </div>`
   :`<div class="card" style="text-align:center;margin-top:14px"><b>${lbTab==='week'?'لم تلعب أي طالبة هذا الأسبوع بعد.':'لم تلعب أي طالبة بعد.'} كوني أول بطلة على اللوحة!</b></div>`}
-  <p class="lbnote">النقاط: ١٠ لكل إجابة صحيحة • ٥ لكل نجمة مرحلة • ٣ لكل ملعقة ذهبية • ٣٠ لكل عالم مكتمل • ١٠ لكل مرحلة صعبة (تُحسب أفضل محاولة في كل مرحلة).${DB?'':'<br>📱 تظهر هنا نتائج من لعبن على هذا الجهاز.'}</p>
+  <p class="lbnote">النقاط: ١٠ لكل إجابة صحيحة • ٥ لكل نجمة مرحلة • ٣ لكل ملعقة ذهبية • ٣٠ لكل عالم مكتمل • ١٠ لكل مرحلة صعبة (تُحسب أفضل محاولة في كل مرحلة).${(DB||sheetOn())?'':'<br>📱 تظهر هنا نتائج من لعبن على هذا الجهاز.'}</p>
   <div class="btns"><button class="b3d g" id="bk">⬅ رجوع</button></div></div>`;
   app.querySelectorAll('.lbt').forEach(b=>b.onclick=()=>{lbTab=b.dataset.t;beep('tap');draw()});
   $('bk').onclick=back||home;
