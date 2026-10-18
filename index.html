@@ -1677,7 +1677,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&G.pause
 function heartsHtml(h,m){m=m||3;return Array.from({length:m},(_,k)=>`<span class="${k<h?'':'lost'}">💖</span>`).join('')}
 const RM=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 const EMOF='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-function emo(x,e,X,Y,sz,rot){x.save();x.translate(X,Y);if(rot)x.rotate(rot);x.font=`${Math.round(sz)}px ${EMOF}`;x.textAlign='center';x.textBaseline='middle';x.fillText(e,0,0);x.restore()}
+function emo(x,e,X,Y,sz,rot){x.save();x.translate(X,Y);if(rot)x.rotate(rot);if(sz>16){x.shadowColor='rgba(60,30,10,.28)';x.shadowBlur=sz*.14;x.shadowOffsetY=sz*.07}x.font=`${Math.round(sz)}px ${EMOF}`;x.textAlign='center';x.textBaseline='middle';x.fillText(e,0,0);x.restore()}
 function rrx(x,X,Y,w,h,r){x.beginPath();if(x.roundRect)x.roundRect(X,Y,w,h,r);else x.rect(X,Y,w,h)}
 
 /* ---------- رسم المطبخ (مشترك بين اللعب و«مطبخي») ---------- */
@@ -1693,12 +1693,13 @@ function drawKitchen(x,W,H,GY,U,TH,t,has){
  if(TH.win==='night'){x.fillStyle='#fffde7';x.beginPath();x.arc(wx+ww*.7,wy+wh*.3,10*U,0,7);x.fill();x.fillStyle='#0f1440';x.beginPath();x.arc(wx+ww*.7+4*U,wy+wh*.3-3*U,8*U,0,7);x.fill();x.fillStyle='#fff';for(let i=0;i<8;i++)x.fillRect(wx+((i*37)%ww),wy+((i*23)%(wh*.8)),1.6,1.6)}
  else{x.fillStyle=TH.win==='sunset'?'#ffcf8a':'#fff3a0';x.beginPath();x.arc(wx+ww*.75,wy+wh*.3,11*U,0,7);x.fill();x.fillStyle='rgba(255,255,255,.9)';const cx=wx+((t/90)%(ww+60))-30;x.beginPath();x.arc(cx,wy+wh*.55,8*U,0,7);x.arc(cx+10*U,wy+wh*.5,10*U,0,7);x.arc(cx+20*U,wy+wh*.56,7*U,0,7);x.fill()}
  x.fillStyle='#7ccf6b';x.beginPath();x.ellipse(wx+ww*.3,wy+wh,ww*.45,wh*.25,0,Math.PI,0);x.fill();
+ x.fillStyle='rgba(0,0,0,.08)';x.fillRect(wx+4*U,wy+4*U,ww,wh);x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=2;x.beginPath();x.moveTo(wx+ww*.1,wy+wh*.9);x.lineTo(wx+ww*.35,wy+wh*.1);x.stroke();
  x.strokeStyle='#fff';x.lineWidth=6*U;x.strokeRect(wx,wy,ww,wh);x.lineWidth=3*U;x.beginPath();x.moveTo(wx+ww/2,wy);x.lineTo(wx+ww/2,wy+wh);x.moveTo(wx,wy+wh/2);x.lineTo(wx+ww,wy+wh/2);x.stroke();
  x.fillStyle='#fff';x.fillRect(wx-8*U,wy+wh,ww+16*U,7*U);
  if(TH.win!=='night'){const lg=x.createLinearGradient(0,wy,0,GY);lg.addColorStop(0,'rgba(255,250,220,.28)');lg.addColorStop(1,'rgba(255,250,220,0)');x.fillStyle=lg;x.beginPath();x.moveTo(wx,wy+wh);x.lineTo(wx+ww,wy+wh);x.lineTo(wx+ww*1.9,GY);x.lineTo(wx+ww*.6,GY);x.closePath();x.fill()}
  if(has('curtain')){x.fillStyle='#ff8fb1';[[wx-6*U,1],[wx+ww+6*U,-1]].forEach(([cx,d])=>{x.beginPath();x.moveTo(cx,wy-8*U);x.quadraticCurveTo(cx+d*26*U,wy+wh*.4,cx+d*6*U,wy+wh+4*U);x.lineTo(cx,wy+wh+4*U);x.fill()});x.fillStyle='#ffd6e5';for(let i=0;i<6;i++){x.beginPath();x.arc(wx+(i%2?ww+4*U:-4*U),wy+i*wh/6,2.4*U,0,7);x.fill()}x.fillStyle='#c2408a';x.fillRect(wx-10*U,wy-10*U,ww+20*U,5*U)}
  /* الرفّ */
- const sy=H*.43,sx0=W*.56,sx1=W*.98;x.fillStyle='#a96e43';x.fillRect(sx0,sy,sx1-sx0,7*U);x.fillStyle='#7a4a22';x.fillRect(sx0+6*U,sy+7*U,5*U,12*U);x.fillRect(sx1-11*U,sy+7*U,5*U,12*U);
+ const sy=H*.43,sx0=W*.56,sx1=W*.98;x.fillStyle='rgba(0,0,0,.1)';x.fillRect(sx0+3*U,sy+7*U,sx1-sx0,6*U);{const sg=x.createLinearGradient(0,sy,0,sy+7*U);sg.addColorStop(0,'#c98a5b');sg.addColorStop(1,'#8d5a33');x.fillStyle=sg}x.fillRect(sx0,sy,sx1-sx0,7*U);x.fillStyle='#7a4a22';x.fillRect(sx0+6*U,sy+7*U,5*U,12*U);x.fillRect(sx1-11*U,sy+7*U,5*U,12*U);
  emo(x,'🫙',sx0+18*U,sy-12*U,22*U);emo(x,'🫖',sx0+46*U,sy-13*U,24*U);
  if(has('spice')){['🧂','🌶️','🧄'].forEach((e,i)=>emo(x,e,sx1-20*U-i*22*U,sy-11*U,19*U))}
  if(has('plant'))emo(x,'🪴',sx0+74*U,sy-16*U,30*U);
@@ -1709,7 +1710,7 @@ function drawKitchen(x,W,H,GY,U,TH,t,has){
 function drawCounter(x,W,H,GY,U,TH){
  {const mg=x.createLinearGradient(0,GY,0,GY+12*U);mg.addColorStop(0,'#ffffff');mg.addColorStop(1,'#e6e1dc');x.fillStyle=mg;x.fillRect(0,GY,W,12*U);x.strokeStyle='rgba(150,140,135,.35)';x.lineWidth=1;for(let i=0;i<6;i++){const sx=(i*137)%W;x.beginPath();x.moveTo(sx,GY+2*U);x.quadraticCurveTo(sx+30*U,GY+9*U,sx+70*U,GY+4*U);x.stroke()}}x.fillStyle='rgba(0,0,0,.16)';x.fillRect(0,GY+12*U,W,3*U);
  const g=x.createLinearGradient(0,GY,0,H);g.addColorStop(0,TH.cab[0]);g.addColorStop(1,TH.cab[1]);x.fillStyle=g;x.fillRect(0,GY+13*U,W,H-GY);
- const n=Math.max(3,Math.round(W/110));for(let i=0;i<n;i++){const cx=i*W/n+6*U,cw=W/n-12*U;x.strokeStyle='rgba(255,255,255,.45)';x.lineWidth=2;rrx(x,cx,GY+22*U,cw,H-GY-30*U,8*U);x.stroke();x.fillStyle='#fff8e1';rrx(x,cx+cw/2-12*U,GY+30*U,24*U,5*U,3*U);x.fill()}
+ const n=Math.max(3,Math.round(W/110));for(let i=0;i<n;i++){const cx=i*W/n+6*U,cw=W/n-12*U,ch=H-GY-30*U;const pg=x.createLinearGradient(cx,GY+22*U,cx+cw,GY+22*U+ch);pg.addColorStop(0,'rgba(255,255,255,.22)');pg.addColorStop(1,'rgba(0,0,0,.12)');x.fillStyle=pg;rrx(x,cx,GY+22*U,cw,ch,8*U);x.fill();x.strokeStyle='rgba(255,255,255,.5)';x.lineWidth=2;x.stroke();x.strokeStyle='rgba(0,0,0,.12)';x.lineWidth=1.5;rrx(x,cx+5*U,GY+27*U,cw-10*U,ch-10*U,6*U);x.stroke();const hg=x.createLinearGradient(0,GY+30*U,0,GY+36*U);hg.addColorStop(0,'#ffffff');hg.addColorStop(1,'#b0bec5');x.fillStyle=hg;rrx(x,cx+cw/2-14*U,GY+30*U,28*U,6*U,3*U);x.fill();x.strokeStyle='rgba(0,0,0,.2)';x.lineWidth=1;x.stroke()}
 }
 
 function startStage(wi,s){
@@ -1731,10 +1732,10 @@ function startStage(wi,s){
   </div>`;
  const cv=$('cv'),x=cv.getContext('2d');
  document.body.classList.add('playing');scrollTo(0,0);
- const dpr=Math.min(2.5,window.devicePixelRatio||1);
+ const dpr=Math.min(3,window.devicePixelRatio||1);
  let W=300,H=240,U=1,GY=200;
  function fit(){const cw=app.clientWidth,res=document.querySelector('.hud').offsetHeight+document.querySelector('.q').offsetHeight+$('opts').offsetHeight+document.querySelector('.ghelp').offsetHeight+70;
-  const ch=Math.round(Math.max(220,Math.min(innerHeight-res,cw*1.05,600)));cv.style.width=cw+'px';cv.style.height=ch+'px';cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);x.setTransform(dpr,0,0,dpr,0,0);
+  const ch=Math.round(Math.max(220,Math.min(innerHeight-res,cw*1.05,600)));cv.style.width=cw+'px';cv.style.height=ch+'px';cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);x.setTransform(dpr,0,0,dpr,0,0);x.imageSmoothingQuality='high';
   W=cw;H=ch;U=Math.max(.7,Math.min(1.5,Math.min(W/420,H/300)));GY=H*.68}
  {const q=document.querySelector('.q'),qp=$('qp'),qi=$('qi'),op=$('opts');let mh=0,oh=0;
   rounds.forEach(r=>{[r.prompt,fillAns(r,1)].forEach(h=>{qp.innerHTML=h;qi.textContent='التحدي ١٠ من ١٠: اختاري '+r.ins;mh=Math.max(mh,q.offsetHeight)});
